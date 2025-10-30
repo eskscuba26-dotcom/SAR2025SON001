@@ -149,12 +149,12 @@ export const CutProducts = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+    if (window.confirm('Bu kaydı silmek istediğinizden emin misiniz? Ana malzeme stoku geri eklenecektir.')) {
       try {
         await cutProductApi.delete(id);
         toast({
           title: 'Başarılı',
-          description: 'Kesilmiş ürün kaydı silindi',
+          description: 'Kesilmiş ürün kaydı silindi ve ana malzeme stoku geri eklendi.',
         });
         fetchCutProducts();
       } catch (error) {
