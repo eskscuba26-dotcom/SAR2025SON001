@@ -42,7 +42,7 @@ bash /app/backend/load_all_original_data.sh
 ```
 
 ### 3. Uygulamayı Aç:
-https://complete-loader.preview.emergentagent.com
+https://github-file-opener.preview.emergentagent.com
 
 **Giriş Bilgileri:**
 - Kullanıcı Adı: **Mehmet**
