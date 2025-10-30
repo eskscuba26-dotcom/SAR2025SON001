@@ -765,22 +765,24 @@ async def get_stock():
             cut_size = cut.get('cutSize', '')
             color = cut.get('color', '')
             
+            # cutSize parsing: "1.8mm x 50cm x 137.5cm"
+            parts = cut_size.split(' x ')
+            if len(parts) < 3:
+                continue  # Geçersiz format, atla
+            
             key = f"cut_{cut_size}_{color}"
             
             if key not in cut_groups:
-                # cutSize parsing: "1.8mm x 50cm x 137.5cm"
-                parts = cut_size.split(' x ')
-                if len(parts) >= 3:
-                    cut_groups[key] = {
-                        'type': 'Kesilmiş',
-                        'thickness': parts[0].replace('mm', '').strip(),
-                        'width': parts[1].replace('cm', '').strip(),
-                        'length': parts[2].strip(),
-                        'color': color,
-                        'colorCategory': cut.get('colorCategory', 'Doğal'),
-                        'm2': 0.69,  # Kesilmiş ürün m2
-                        'quantity': 0
-                    }
+                cut_groups[key] = {
+                    'type': 'Kesilmiş',
+                    'thickness': parts[0].replace('mm', '').strip(),
+                    'width': parts[1].replace('cm', '').strip(),
+                    'length': parts[2].strip(),
+                    'color': color,
+                    'colorCategory': cut.get('colorCategory', 'Doğal'),
+                    'm2': 0.69,  # Kesilmiş ürün m2
+                    'quantity': 0
+                }
             
             cut_groups[key]['quantity'] += int(cut.get('quantity', 0))
         
