@@ -22,7 +22,52 @@ export const Dashboard = () => {
       sari: 0,
     },
   });
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchStats();
+    
+    // PWA kurulum olayını yakala
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+    
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    // Zaten kurulmuş mu kontrol et
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallBanner(false);
+    }
+    
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      toast({
+        title: 'Bilgi',
+        description: 'Uygulama zaten kurulu veya tarayıcınız desteklemiyor',
+      });
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      toast({
+        title: 'Başarılı',
+        description: 'Uygulama ana ekrana eklendi!',
+      });
+    }
+    
+    setDeferredPrompt(null);
+    setShowInstallBanner(false);
+  };
 
   useEffect(() => {
     fetchStats();
