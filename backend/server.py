@@ -349,7 +349,9 @@ async def create_cut_product(data: dict, _: bool = Depends(check_admin_role)):
         # Ana malzeme bilgilerini parse et: "1.8mm x 100cm x 300m"
         parts = material.split(' x ')
         if len(parts) >= 3:
-            thickness = parts[0].strip()  # "1.8mm"
+            # Kalınlığı normalize et: "1.8mm" -> "1.8 mm" (boşluk ekle)
+            thickness_raw = parts[0].replace('mm', '').strip()
+            thickness = f"{thickness_raw} mm"  # Üretim kayıtlarıyla aynı format
             width = parts[1].replace('cm', '').strip()  # "100"
             length = parts[2].replace('m', '').strip()  # "300"
             
