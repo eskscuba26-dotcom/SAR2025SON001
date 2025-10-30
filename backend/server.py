@@ -324,9 +324,58 @@ async def get_cut_products():
 
 @api_router.post("/cut-products")
 async def create_cut_product(data: dict, _: bool = Depends(check_admin_role)):
+    """
+    Kesilmiş ürün kaydı oluşturur VE ana malzemeyi stoktan düşer
+    """
     data['id'] = str(uuid.uuid4())
+    
+    # 1. Kesilmiş ürünü kaydet
     await db.cut_products.insert_one(data)
-    return {"message": "Created", "id": data['id']}
+    
+    # 2. Ana malzemeyi stoktan düş
+    # Ana malzeme formatı: "1.8mm x 100cm x 300m"
+    material = data.get('material', '')
+    used_material = data.get('usedMaterial', '')  # "4 adet" formatında
+    color = data.get('color', 'Doğal')
+    date = data.get('date', '')
+    
+    # Kullanılan adet sayısını parse et
+    try:
+        used_count = int(used_material.split()[0])  # "4 adet" -> 4
+    except:
+        used_count = 0
+    
+    if used_count > 0 and material:
+        # Ana malzeme bilgilerini parse et: "1.8mm x 100cm x 300m"
+        parts = material.split(' x ')
+        if len(parts) >= 3:
+            thickness = parts[0].strip()  # "1.8mm"
+            width = parts[1].replace('cm', '').strip()  # "100"
+            length = parts[2].replace('m', '').strip()  # "300"
+            
+            # Stoktan düşmek için negatif üretim kaydı ekle
+            deduction_record = {
+                'id': str(uuid.uuid4()),
+                'date': date,
+                'machine': 'Ebatlama Kesim',
+                'thickness': thickness,
+                'width': width,
+                'length': length,
+                'quantity': -used_count,  # NEGATİF - stoktan düşer
+                'color': color,
+                'colorCategory': color,
+                'm2': 0,
+                'note': f'Ebatlama kesimi - {data.get("cutSize", "")} için kullanıldı',
+                'isCutDeduction': True  # Bu kaydın kesim için olduğunu işaretle
+            }
+            
+            await db.productions.insert_one(deduction_record)
+    
+    return {
+        "message": "Created", 
+        "id": data['id'],
+        "stockDeducted": used_count if used_count > 0 else 0
+    }
 
 @api_router.delete("/cut-products/{id}")
 async def delete_cut_product(id: str, _: bool = Depends(check_admin_role)):
