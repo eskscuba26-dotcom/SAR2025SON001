@@ -5,32 +5,49 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { cutProductApi, productionApi } from '@/services/api';
+import { cutProductApi } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { Trash2, Download, Scissors } from 'lucide-react';
+import { Trash2, Download, Scissors, Calculator } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 export const CutProducts = () => {
   const auth = useAuth();
   const [cutProducts, setCutProducts] = useState([]);
-  const [productions, setProductions] = useState([]);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    material: '',
-    cutSize: '',
-    quantity: '',
-    usedMaterial: '',
-    color: 'Doğal',
-    cutWidth: '',
-    cutLength: '',
+    // Ana Malzeme Ölçüleri
+    sourceMaterialThickness: '', // mm
+    sourceMaterialWidth: '', // cm (En)
+    sourceMaterialLength: '', // m (Boy/Metre)
+    sourceMaterialColor: 'Doğal',
+    
+    // Kesilecek Ebat
+    cutThickness: '', // mm (Kalınlık)
+    cutWidth: '', // cm (En/Boy)
+    cutLength: '', // cm (Santim)
+    cutQuantity: '', // İstenen adet
+    
+    // Otomatik hesaplananlar
+    requiredSourcePieces: 0, // Kaç adet ana üründen kesilecek
+    totalCutPieces: 0, // Toplam kesilen adet
   });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchCutProducts();
-    fetchProductions();
   }, []);
+
+  useEffect(() => {
+    // Otomatik hesaplama
+    calculateRequiredPieces();
+  }, [
+    formData.sourceMaterialWidth,
+    formData.sourceMaterialLength,
+    formData.cutWidth,
+    formData.cutLength,
+    formData.cutQuantity
+  ]);
 
   const fetchCutProducts = async () => {
     try {
@@ -41,33 +58,86 @@ export const CutProducts = () => {
     }
   };
 
-  const fetchProductions = async () => {
-    try {
-      const response = await productionApi.getAll();
-      setProductions(response.data);
-    } catch (error) {
-      console.error('Fetch error:', error);
+  const calculateRequiredPieces = () => {
+    const sourceWidth = parseFloat(formData.sourceMaterialWidth) || 0;
+    const sourceLength = parseFloat(formData.sourceMaterialLength) * 100 || 0; // m → cm
+    const cutWidth = parseFloat(formData.cutWidth) || 0;
+    const cutLength = parseFloat(formData.cutLength) || 0;
+    const requestedQuantity = parseInt(formData.cutQuantity) || 0;
+
+    if (sourceWidth === 0 || sourceLength === 0 || cutWidth === 0 || cutLength === 0 || requestedQuantity === 0) {
+      return;
     }
+
+    // Bir ana rulo/yaprağından kaç adet kesilebilir?
+    const piecesPerWidth = Math.floor(sourceWidth / cutWidth);
+    const piecesPerLength = Math.floor(sourceLength / cutLength);
+    const totalPiecesPerSource = piecesPerWidth * piecesPerLength;
+
+    if (totalPiecesPerSource === 0) {
+      setFormData(prev => ({
+        ...prev,
+        requiredSourcePieces: 0,
+        totalCutPieces: 0
+      }));
+      return;
+    }
+
+    // Kaç adet ana malzeme gerekli?
+    const requiredSources = Math.ceil(requestedQuantity / totalPiecesPerSource);
+    const totalCut = requiredSources * totalPiecesPerSource;
+
+    setFormData(prev => ({
+      ...prev,
+      requiredSourcePieces: requiredSources,
+      totalCutPieces: totalCut
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (formData.requiredSourcePieces === 0) {
+      toast({
+        title: 'Hata',
+        description: 'Hesaplama yapılamadı. Lütfen tüm ölçüleri doğru girin.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
-      await cutProductApi.create(formData);
+      // Backend'e gönderilecek veri formatı
+      const cutProductData = {
+        date: formData.date,
+        material: `${formData.sourceMaterialThickness}mm x ${formData.sourceMaterialWidth}cm x ${formData.sourceMaterialLength}m`,
+        cutSize: `${formData.cutThickness}mm x ${formData.cutWidth}cm x ${formData.cutLength}cm`,
+        quantity: formData.totalCutPieces,
+        usedMaterial: `${formData.requiredSourcePieces} adet`,
+        color: formData.sourceMaterialColor,
+        colorCategory: formData.sourceMaterialColor,
+      };
+
+      await cutProductApi.create(cutProductData);
       toast({
         title: 'Başarılı',
-        description: 'Kesilmiş ürün kaydı eklendi',
+        description: `${formData.requiredSourcePieces} adet ana malzemeden ${formData.totalCutPieces} adet ürün kesildi ve stoktan düşüldü.`,
       });
       fetchCutProducts();
+      
+      // Form reset
       setFormData({
         date: new Date().toISOString().split('T')[0],
-        material: '',
-        cutSize: '',
-        quantity: '',
-        usedMaterial: '',
-        color: 'Doğal',
+        sourceMaterialThickness: '',
+        sourceMaterialWidth: '',
+        sourceMaterialLength: '',
+        sourceMaterialColor: 'Doğal',
+        cutThickness: '',
         cutWidth: '',
         cutLength: '',
+        cutQuantity: '',
+        requiredSourcePieces: 0,
+        totalCutPieces: 0,
       });
     } catch (error) {
       toast({
@@ -100,9 +170,9 @@ export const CutProducts = () => {
   const exportToExcel = () => {
     const exportData = cutProducts.map(item => ({
       'Tarih': item.date,
-      'Orijinal Malzeme': item.originalMaterial || item.material,
+      'Ana Malzeme': item.material,
       'Kesim Boyutu': item.cutSize,
-      'Adet': item.quantity,
+      'Kesilen Adet': item.quantity,
       'Kullanılan Malzeme': item.usedMaterial,
       'Renk': item.color
     }));
@@ -116,9 +186,9 @@ export const CutProducts = () => {
   return (
     <div className="space-y-6" data-testid="cut-products-page">
       <div>
-        <h1 className="text-3xl font-bold text-white">Kesilmiş Ürün</h1>
+        <h1 className="text-3xl font-bold text-white">Kesilmiş Ürün (Ebatlama)</h1>
         <p className="text-slate-400 mt-1">
-          {auth.isViewer() ? 'Ebatlama kayıtlarını görüntüleyin' : 'Ebatlama işlemlerini yönetin'}
+          {auth.isViewer() ? 'Ebatlama kayıtlarını görüntüleyin' : 'Otomatik hesaplama ile ebatlama işlemleri'}
         </p>
       </div>
 
@@ -127,13 +197,14 @@ export const CutProducts = () => {
       <Card className="bg-slate-900/50 border-slate-800">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            <Scissors className="h-5 w-5" />
-            Kesilmiş Ürün Kaydı Ekle
+            <Calculator className="h-5 w-5" />
+            Otomatik Ebatlama Hesaplama
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Tarih */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-slate-200">Tarih</Label>
                 <Input
@@ -144,81 +215,168 @@ export const CutProducts = () => {
                   required
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label className="text-slate-200">Ana Malzeme</Label>
-                <Input
-                  type="text"
-                  value={formData.material}
-                  onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                  placeholder="Örn: 1.8mm x 100cm x 300m"
-                  className="bg-slate-800/50 border-slate-700 text-white"
-                  required
-                />
-              </div>
+            {/* ANA MALZEME ÖLÇÜLERİ */}
+            <div className="border border-blue-500/30 rounded-lg p-4 bg-blue-500/5">
+              <h3 className="text-blue-400 font-semibold mb-4 flex items-center gap-2">
+                📦 Ana Malzeme Ölçüleri
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Kalınlık (mm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={formData.sourceMaterialThickness}
+                    onChange={(e) => setFormData({ ...formData, sourceMaterialThickness: e.target.value })}
+                    placeholder="1.8"
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="text-slate-200">Kesilecek Ebat</Label>
-                <Input
-                  type="text"
-                  value={formData.cutSize}
-                  onChange={(e) => setFormData({ ...formData, cutSize: e.target.value })}
-                  placeholder="Örn: 1.8mm x 50cm x 137.5cm"
-                  className="bg-slate-800/50 border-slate-700 text-white"
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-200">En (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={formData.sourceMaterialWidth}
+                    onChange={(e) => setFormData({ ...formData, sourceMaterialWidth: e.target.value })}
+                    placeholder="100"
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="text-slate-200">Kesilen Adet</Label>
-                <Input
-                  type="number"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                  placeholder="1744"
-                  className="bg-slate-800/50 border-slate-700 text-white"
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Boy / Metre (m)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={formData.sourceMaterialLength}
+                    onChange={(e) => setFormData({ ...formData, sourceMaterialLength: e.target.value })}
+                    placeholder="300"
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="text-slate-200">Kullanılan Malzeme</Label>
-                <Input
-                  type="text"
-                  value={formData.usedMaterial}
-                  onChange={(e) => setFormData({ ...formData, usedMaterial: e.target.value })}
-                  placeholder="Örn: 4 adet"
-                  className="bg-slate-800/50 border-slate-700 text-white"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-200">Renk</Label>
-                <Select
-                  value={formData.color}
-                  onValueChange={(value) => setFormData({ ...formData, color: value })}
-                >
-                  <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Doğal">Doğal</SelectItem>
-                    <SelectItem value="Sarı">Sarı</SelectItem>
-                    <SelectItem value="Siyah">Siyah</SelectItem>
-                    <SelectItem value="Mavi">Mavi</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Renk</Label>
+                  <Select
+                    value={formData.sourceMaterialColor}
+                    onValueChange={(value) => setFormData({ ...formData, sourceMaterialColor: value })}
+                  >
+                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Doğal">Doğal</SelectItem>
+                      <SelectItem value="Sarı">Sarı</SelectItem>
+                      <SelectItem value="Siyah">Siyah</SelectItem>
+                      <SelectItem value="Mavi">Mavi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
+            {/* KESİLECEK EBAT */}
+            <div className="border border-emerald-500/30 rounded-lg p-4 bg-emerald-500/5">
+              <h3 className="text-emerald-400 font-semibold mb-4 flex items-center gap-2">
+                <Scissors className="h-4 w-4" />
+                Kesilecek Ebat Ölçüleri
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Kalınlık (mm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={formData.cutThickness}
+                    onChange={(e) => setFormData({ ...formData, cutThickness: e.target.value })}
+                    placeholder="1.8"
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-200">En / Boy (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={formData.cutWidth}
+                    onChange={(e) => setFormData({ ...formData, cutWidth: e.target.value })}
+                    placeholder="50"
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Uzunluk (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={formData.cutLength}
+                    onChange={(e) => setFormData({ ...formData, cutLength: e.target.value })}
+                    placeholder="137.5"
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-200">İstenen Adet</Label>
+                  <Input
+                    type="number"
+                    value={formData.cutQuantity}
+                    onChange={(e) => setFormData({ ...formData, cutQuantity: e.target.value })}
+                    placeholder="1744"
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* HESAPLAMA SONUÇLARI */}
+            {formData.requiredSourcePieces > 0 && (
+              <div className="border border-yellow-500/30 rounded-lg p-4 bg-yellow-500/5">
+                <h3 className="text-yellow-400 font-semibold mb-4 flex items-center gap-2">
+                  🧮 Hesaplama Sonuçları
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-slate-800/50 p-4 rounded-lg">
+                    <div className="text-slate-400 text-sm">Kullanılacak Ana Malzeme</div>
+                    <div className="text-3xl font-bold text-orange-400 mt-1">
+                      {formData.requiredSourcePieces} <span className="text-sm text-slate-400">adet</span>
+                    </div>
+                  </div>
+                  <div className="bg-slate-800/50 p-4 rounded-lg">
+                    <div className="text-slate-400 text-sm">Toplam Kesilen Ürün</div>
+                    <div className="text-3xl font-bold text-emerald-400 mt-1">
+                      {formData.totalCutPieces} <span className="text-sm text-slate-400">adet</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-400 bg-slate-800/30 p-3 rounded">
+                  💡 <span className="font-semibold">{formData.requiredSourcePieces} adet</span> ana malzeme stoktan düşülecek, 
+                  <span className="font-semibold"> {formData.totalCutPieces} adet</span> kesilmiş ürün stoğa eklenecek.
+                </div>
+              </div>
+            )}
+
             <Button
               type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-6"
               data-testid="submit-cut-product-btn"
+              disabled={formData.requiredSourcePieces === 0}
             >
-              <Scissors className="h-4 w-4 mr-2" />
-              Kesilmiş Ürün Kaydı Ekle
+              <Scissors className="h-5 w-5 mr-2" />
+              Kesim İşlemini Kaydet ve Stoktan Düş
             </Button>
           </form>
         </CardContent>
@@ -259,7 +417,7 @@ export const CutProducts = () => {
                 {cutProducts.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center text-slate-400 py-8">
-                      Henüz kesilmiş ürün kaydı bulunmuyor
+                      Henüz kesilmiş ürün kaydı yok
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -277,7 +435,8 @@ export const CutProducts = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDelete(cut.id)}
-                            className="text-red-400 hover:text-red-300 hover:bg-slate-800"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                            data-testid={`delete-cut-${cut.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -289,16 +448,6 @@ export const CutProducts = () => {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Info Card */}
-      <Card className="bg-slate-900/50 border-slate-800">
-        <CardContent className="p-4">
-          <p className="text-slate-400 text-sm">
-            💡 <strong>Bilgi:</strong> Ana malzemeden kesilmiş ürünler burada takip edilir. 
-            Kesilen parça sayısı ve kullanılan ana malzeme miktarı otomatik olarak stoktan düşer.
-          </p>
         </CardContent>
       </Card>
     </div>
