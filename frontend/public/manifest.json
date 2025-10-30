@@ -1,0 +1,28 @@
+{
+  "short_name": "SAR Ambalaj",
+  "name": "SAR Ambalaj Üretim Yönetim Sistemi",
+  "description": "Üretim, stok ve maliyet yönetim sistemi",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1e40af",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["business", "productivity"],
+  "lang": "tr",
+  "dir": "ltr"
+}
