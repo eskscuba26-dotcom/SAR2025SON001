@@ -379,10 +379,26 @@ async def create_cut_product(data: dict, _: bool = Depends(check_admin_role)):
 
 @api_router.delete("/cut-products/{id}")
 async def delete_cut_product(id: str, _: bool = Depends(check_admin_role)):
-    result = await db.cut_products.delete_one({"id": id})
-    if result.deleted_count == 0:
+    """
+    Kesilmiş ürün kaydını siler VE stoku geri ekler
+    """
+    # Önce kaydı bul
+    cut_product = await db.cut_products.find_one({"id": id})
+    if not cut_product:
         raise HTTPException(status_code=404, detail="Not found")
-    return {"message": "Deleted"}
+    
+    # 1. Kesilmiş ürünü sil
+    await db.cut_products.delete_one({"id": id})
+    
+    # 2. İlgili stok düşüş kaydını bul ve sil (eğer varsa)
+    # cutSize bilgisini kullanarak ilgili deduction kaydını bul
+    cut_size = cut_product.get('cutSize', '')
+    await db.productions.delete_one({
+        "isCutDeduction": True,
+        "note": {"$regex": cut_size}
+    })
+    
+    return {"message": "Deleted", "stockRestored": True}
 
 # ===== Shipments Routes =====
 @api_router.get("/shipments")
