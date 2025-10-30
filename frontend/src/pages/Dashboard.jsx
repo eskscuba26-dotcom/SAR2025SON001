@@ -101,6 +101,35 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-8" data-testid="dashboard-page">
+      {/* PWA Kurulum Banner */}
+      {showInstallBanner && (
+        <Card className="bg-gradient-to-r from-blue-600 to-blue-700 border-0 relative">
+          <CardContent className="p-4">
+            <button
+              onClick={() => setShowInstallBanner(false)}
+              className="absolute top-2 right-2 text-white/80 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-4">
+              <Smartphone className="h-12 w-12 text-white" />
+              <div className="flex-1">
+                <h3 className="text-white font-semibold text-lg">📱 Telefonunuza Kurun!</h3>
+                <p className="text-white/90 text-sm mt-1">
+                  Uygulamayı ana ekranınıza ekleyin ve her yerden hızlıca erişin
+                </p>
+              </div>
+              <Button
+                onClick={handleInstallClick}
+                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold"
+              >
+                Kur
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white">Hoş Geldiniz</h1>
