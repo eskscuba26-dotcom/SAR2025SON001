@@ -1126,11 +1126,12 @@ async def generate_pdf_report(start_date: str, end_date: str):
         # Dosya adı
         file_name = f"SAR_Ambalaj_{month_name.replace(' ', '_')}_Raporu.pdf"
         
+        # inline = iframe'de göster, attachment = direkt indir
         return StreamingResponse(
             buffer,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename={file_name}"
+                "Content-Disposition": f"inline; filename={file_name}"
             }
         )
         
