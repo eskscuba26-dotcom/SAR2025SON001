@@ -18,61 +18,21 @@ export const Reporting = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const generatePDFReport = async () => {
-    try {
-      setLoading(true);
-      
-      const token = localStorage.getItem('token');
-      
-      // DIREKT backend URL'ine git - tarayıcı otomatik indirecek
-      const downloadUrl = `${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
-      
-      // Token varsa header ile fetch et
-      if (token) {
-        const response = await fetch(downloadUrl, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Rapor olusturulamadi');
-        }
-        
-        // Blob'a çevir
-        const blob = await response.blob();
-        
-        // Geçici URL oluştur ve indir
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `SAR_Ambalaj_Raporu_${dateRange.startDate}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        // Token yoksa direkt window.location
-        window.location.href = downloadUrl;
-      }
-
-      toast({
-        title: '✅ Basarili!',
-        description: 'PDF indiriliyor. Lutfen Downloads klasorunu kontrol edin.',
-        duration: 5000,
-      });
-
-    } catch (error) {
-      console.error('Hata:', error);
-      toast({
-        title: 'Hata',
-        description: 'PDF olusturulamadi. Lutfen tekrar deneyin.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  const generatePDFReport = () => {
+    // Direkt backend URL'ine yönlendir - JavaScript yok, sadece link
+    const token = localStorage.getItem('token');
+    const downloadUrl = `${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
+    
+    // Yeni pencerede aç - tarayıcı otomatik indirecek
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.target = '_self'; // Aynı pencerede
+    link.click();
+    
+    toast({
+      title: 'PDF indiriliyor...',
+      description: 'Lutfen bekleyin, dosya Downloads klasorune kaydediliyor.',
+    });
   };
 
   const setCurrentMonth = () => {
