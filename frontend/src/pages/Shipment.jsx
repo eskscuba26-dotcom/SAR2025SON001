@@ -473,16 +473,28 @@ export const Shipment = () => {
                       <TableCell className="text-slate-300">{ship.quantity}</TableCell>
                       <TableCell className="text-slate-300">{ship.color}</TableCell>
                       <TableCell className="text-blue-400">{ship.waybill}</TableCell>
-                      {auth.canDelete() && (
+                      {auth.canEdit() && (
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(ship.id)}
-                            className="text-red-400 hover:text-red-300 hover:bg-slate-800"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(ship)}
+                              className="text-blue-400 hover:text-blue-300 hover:bg-slate-800"
+                              title="Düzenle"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(ship.id)}
+                              className="text-red-400 hover:text-red-300 hover:bg-slate-800"
+                              title="Sil"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       )}
                     </TableRow>
