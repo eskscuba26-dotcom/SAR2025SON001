@@ -593,7 +593,7 @@ export const Reporting = () => {
         );
       }
 
-      // PDF'i indir VE yeni sekmede aç
+      // PDF'i indir
       const monthNameFile = startDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).replace(' ', '_');
       const fileName = `SAR_Ambalaj_${monthNameFile}_Raporu.pdf`;
       
@@ -601,15 +601,19 @@ export const Reporting = () => {
       const pdfBlob = doc.output('blob');
       const pdfUrl = URL.createObjectURL(pdfBlob);
       
-      // Yeni sekmede aç
-      window.open(pdfUrl, '_blank');
+      // İndirme linki oluştur ve tıklat
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pdfUrl;
+      downloadLink.download = fileName;
+      downloadLink.click();
       
-      // Ayrıca indir
-      doc.save(fileName);
+      // Belleği temizle
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 100);
 
       toast({
-        title: 'Basarili!',
-        description: 'Rapor yeni sekmede acildi ve indirildi',
+        title: '✅ Basarili!',
+        description: `PDF indirildi: ${fileName}. Tarayicinizin indirmeler bolumunden (Ctrl+J) goruntuleyebilirsiniz.`,
+        duration: 5000,
       });
 
     } catch (error) {
