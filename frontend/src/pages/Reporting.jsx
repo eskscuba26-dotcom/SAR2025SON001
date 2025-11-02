@@ -110,24 +110,19 @@ export const Reporting = () => {
             </div>
           </div>
 
-          <div className="mt-6">
-            <Button
-              onClick={generatePDFReport}
-              disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6"
+          <div className="mt-6 space-y-3">
+            <a
+              href={`${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`}
+              download
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6 rounded-md flex items-center justify-center gap-2 font-medium transition-colors"
             >
-              {loading ? (
-                <>
-                  <span className="animate-spin mr-2">⏳</span>
-                  Rapor Hazirlaniyor...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-5 w-5" />
-                  PDF Rapor Olustur ve Indir
-                </>
-              )}
-            </Button>
+              <Download className="h-5 w-5" />
+              PDF Raporu Indir (Direkt Link)
+            </a>
+            
+            <p className="text-slate-400 text-sm text-center">
+              ☝️ Yukardaki butona tiklayin, PDF direkt bilgisayariniza indirilecek
+            </p>
           </div>
         </CardContent>
       </Card>
