@@ -20,6 +20,9 @@ export const Shipment = () => {
     date: new Date().toISOString().split('T')[0],
     customer: '',
     type: 'Normal',
+    thickness: '',
+    width: '',
+    length: '',
     size: '',
     m2: 0,
     quantity: '',
@@ -30,6 +33,29 @@ export const Shipment = () => {
     exitTime: '',
   });
   const { toast } = useToast();
+
+  // Otomatik m² hesaplama
+  useEffect(() => {
+    const width = parseFloat(formData.width) || 0;
+    const length = parseFloat(formData.length) || 0;
+    const quantity = parseFloat(formData.quantity) || 0;
+    
+    if (width > 0 && length > 0 && quantity > 0) {
+      // En (cm) x Metre (m) = m² per piece
+      const m2PerPiece = (width * length) / 100;
+      const totalM2 = m2PerPiece * quantity;
+      
+      // Size'ı otomatik oluştur
+      const thickness = formData.thickness || '';
+      const sizeStr = thickness ? `${thickness}mm x ${width}cm x ${length}m` : `${width}cm x ${length}m`;
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        m2: parseFloat(totalM2.toFixed(2)),
+        size: sizeStr
+      }));
+    }
+  }, [formData.thickness, formData.width, formData.length, formData.quantity]);
 
   useEffect(() => {
     fetchShipments();
