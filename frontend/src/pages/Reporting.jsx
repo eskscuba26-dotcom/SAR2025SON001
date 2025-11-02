@@ -141,55 +141,7 @@ export const Reporting = () => {
         </CardContent>
       </Card>
 
-      {/* PDF Önizleme */}
-      {pdfBlob && (
-        <Card className="bg-slate-900/50 border-emerald-600">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white">✅ PDF RAPOR HAZIR</CardTitle>
-              <Button
-                onClick={() => setPdfBlob(null)}
-                variant="outline"
-                className="border-slate-600 text-slate-300"
-              >
-                Kapat
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="bg-gradient-to-r from-green-900/50 to-blue-900/50 border-4 border-green-500 rounded-lg p-6 text-center">
-                <p className="text-green-200 font-bold text-2xl mb-4">
-                  📥 BILGISAYARINIZA KAYDETMEK ICIN:
-                </p>
-                <div className="text-green-100 text-lg space-y-3 text-left max-w-2xl mx-auto">
-                  <p>1️⃣ Asagidaki PDF <strong className="text-yellow-300">UZERINE SAG TIKLAYIN</strong></p>
-                  <p>2️⃣ <strong className="text-yellow-300">"FARKLI KAYDET"</strong> veya <strong className="text-yellow-300">"SAVE AS"</strong> secenegini tiklayin</p>
-                  <p>3️⃣ Bilgisayarinizda kaydetmek istediginiz yeri secin</p>
-                  <p>4️⃣ <strong className="text-yellow-300">KAYDET</strong> butonuna basin - BITTI! ✅</p>
-                </div>
-              </div>
-
-              <div className="border-8 border-emerald-500 rounded-lg overflow-hidden bg-white">
-                <iframe
-                  src={pdfBlob}
-                  className="w-full"
-                  style={{ height: '900px' }}
-                  title="PDF Rapor - Sag Tikla Farkli Kaydet"
-                />
-              </div>
-
-              <div className="bg-yellow-900/50 border-2 border-yellow-500 rounded p-4 text-center">
-                <p className="text-yellow-200 font-semibold">
-                  ⚠️ PDF gorunmuyorsa tarayicinizin sol ustundeki INDIR butonunu kullanin
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-blue-700">
+      <Card className="bg-gradient-to-r from-green-900/50 to-blue-900/50 border-green-700">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
             <FileText className="h-8 w-8 text-blue-400 flex-shrink-0" />
