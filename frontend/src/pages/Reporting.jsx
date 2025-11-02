@@ -110,22 +110,26 @@ export const Reporting = () => {
             </div>
           </div>
 
-          <div className="mt-6 space-y-3">
-            <Button
-              onClick={() => {
-                // Sayfayı direkt PDF URL'ine yönlendir
-                window.location.href = `${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
-              }}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6"
+          <div className="mt-6 space-y-4">
+            {/* Direkt HTML link - JavaScript YOK */}
+            <a 
+              href={`${BACKEND_URL}/api/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`}
+              className="block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6 rounded-md text-center font-medium transition-colors"
+              style={{ textDecoration: 'none' }}
             >
-              <Download className="mr-2 h-5 w-5" />
-              PDF Raporu Indir
-            </Button>
+              <span className="inline-flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                PDF Raporu Indir (Tikla)
+              </span>
+            </a>
             
-            <div className="bg-yellow-900/30 border border-yellow-600 rounded p-4">
-              <p className="text-yellow-200 text-sm">
-                💡 <strong>Not:</strong> Butona basinca yeni bir sayfaya gidecek ve PDF gorunecek. 
-                Tarayicinizin sol ustundeki indirme butonunu veya sag tikla → Farkli Kaydet kullanin.
+            <div className="bg-blue-900/30 border border-blue-600 rounded p-4 text-center">
+              <p className="text-blue-200 text-sm font-semibold mb-2">
+                ⬆️ YUKARIDAKI YESIL BUTONA TIKLAYIN
+              </p>
+              <p className="text-blue-300 text-xs">
+                PDF yeni sekmede acilacak. Tarayicinizin indir butonunu kullanin<br/>
+                VEYA sag tikla → Farkli Kaydet
               </p>
             </div>
           </div>
