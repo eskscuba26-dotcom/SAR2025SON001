@@ -595,23 +595,21 @@ export const Reporting = () => {
         );
       }
 
-      // PDF'i indir - jsPDF'in kendi metodunu kullan
+      // PDF'i blob olarak sakla
       const monthNameFile = startDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).replace(' ', '_');
       const fileName = `SAR_Ambalaj_${monthNameFile}_Raporu.pdf`;
       
-      // Direkt indirme
-      doc.save(fileName);
+      // PDF'i data URL olarak oluştur
+      const pdfDataUri = doc.output('dataurlstring');
+      
+      // State'e kaydet - bu sayede sayfada gösterebiliriz
+      setPdfUrl(pdfDataUri);
+      setPdfFileName(fileName);
 
       toast({
-        title: '✅ PDF Hazirlandi!',
-        description: (
-          <div className="space-y-2">
-            <p className="font-semibold">{fileName}</p>
-            <p className="text-sm">Tarayicinizin indirmeler klasorune kaydedildi.</p>
-            <p className="text-xs">👉 Ctrl+J tusuna basarak indirmeler sayfasini acin.</p>
-          </div>
-        ),
-        duration: 8000,
+        title: '✅ PDF Hazir!',
+        description: 'PDF asagida goruntuleniyor. Sag tikla-Farkli Kaydet ile indirebilirsiniz.',
+        duration: 5000,
       });
 
     } catch (error) {
