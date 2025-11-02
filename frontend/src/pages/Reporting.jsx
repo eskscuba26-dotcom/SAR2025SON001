@@ -15,10 +15,41 @@ export const Reporting = () => {
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
   });
-  const [showPdf, setShowPdf] = useState(false);
+  const [pdfBlob, setPdfBlob] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const pdfUrl = `${BACKEND_URL}/api/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
+  const generatePDF = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(
+        `${BACKEND_URL}/api/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`,
+        {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        }
+      );
+      
+      if (!response.ok) throw new Error('PDF oluşturulamadı');
+      
+      const blob = await response.blob();
+      setPdfBlob(URL.createObjectURL(blob));
+      
+      toast({
+        title: '✅ PDF Hazır!',
+        description: 'PDF asagida gorunuyor. Sag tikla-Farkli Kaydet ile bilgisayariniza indirebilirsiniz.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Hata',
+        description: 'PDF oluşturulamadı: ' + error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const setCurrentMonth = () => {
     const now = new Date();
