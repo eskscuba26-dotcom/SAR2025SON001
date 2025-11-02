@@ -42,7 +42,7 @@ bash /app/backend/load_all_original_data.sh
 ```
 
 ### 3. Uygulamayı Aç:
-https://dosya-opener-1.preview.emergentagent.com
+https://doc-expander.preview.emergentagent.com
 
 **Giriş Bilgileri:**
 - Kullanıcı Adı: **Mehmet**

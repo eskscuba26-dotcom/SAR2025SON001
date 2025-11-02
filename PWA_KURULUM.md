@@ -12,7 +12,7 @@ Uygulamanız artık telefon veya tablete **uygulama gibi** kurulabilir!
 
 1. **Chrome tarayıcısı** ile siteyi açın:
    ```
-   https://dosya-opener-1.preview.emergentagent.com
+   https://doc-expander.preview.emergentagent.com
    ```
 
 2. Giriş yapın (Mehmet / 141413DOa.)
@@ -43,7 +43,7 @@ Uygulamanız artık telefon veya tablete **uygulama gibi** kurulabilir!
 
 1. **Safari tarayıcısı** ile siteyi açın:
    ```
-   https://dosya-opener-1.preview.emergentagent.com
+   https://doc-expander.preview.emergentagent.com
    ```
 
 2. Giriş yapın (Mehmet / 141413DOa.)
