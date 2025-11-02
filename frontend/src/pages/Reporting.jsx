@@ -15,25 +15,10 @@ export const Reporting = () => {
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
   });
-  const [loading, setLoading] = useState(false);
+  const [showPdf, setShowPdf] = useState(false);
   const { toast } = useToast();
 
-  const generatePDFReport = () => {
-    // Direkt backend URL'ine yönlendir - JavaScript yok, sadece link
-    const token = localStorage.getItem('token');
-    const downloadUrl = `${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
-    
-    // Yeni pencerede aç - tarayıcı otomatik indirecek
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.target = '_self'; // Aynı pencerede
-    link.click();
-    
-    toast({
-      title: 'PDF indiriliyor...',
-      description: 'Lutfen bekleyin, dosya Downloads klasorune kaydediliyor.',
-    });
-  };
+  const pdfUrl = `${BACKEND_URL}/api/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
 
   const setCurrentMonth = () => {
     const now = new Date();
