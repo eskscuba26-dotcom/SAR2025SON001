@@ -266,8 +266,11 @@ export const Shipment = () => {
               <div className="space-y-2">
                 <Label className="text-slate-200">Kalınlık (mm)</Label>
                 <Input
-                  type="text"
-                  placeholder="Örn: 2mm"
+                  type="number"
+                  step="0.1"
+                  value={formData.thickness}
+                  onChange={(e) => setFormData({ ...formData, thickness: e.target.value })}
+                  placeholder="Örn: 2"
                   className="bg-slate-800/50 border-slate-700 text-white"
                 />
               </div>
@@ -276,8 +279,12 @@ export const Shipment = () => {
                 <Label className="text-slate-200">En (cm)</Label>
                 <Input
                   type="number"
+                  step="0.1"
+                  value={formData.width}
+                  onChange={(e) => setFormData({ ...formData, width: e.target.value })}
                   placeholder="100"
                   className="bg-slate-800/50 border-slate-700 text-white"
+                  required
                 />
               </div>
 
@@ -285,15 +292,12 @@ export const Shipment = () => {
                 <Label className="text-slate-200">Metre</Label>
                 <Input
                   type="number"
+                  step="0.1"
+                  value={formData.length}
+                  onChange={(e) => setFormData({ ...formData, length: e.target.value })}
                   placeholder="300"
-                  onChange={(e) => {
-                    const metre = parseFloat(e.target.value) || 0;
-                    const quantity = parseFloat(formData.quantity) || 0;
-                    const en = 100; // Varsayılan
-                    const m2 = ((en * metre * quantity) / 10000).toFixed(2);
-                    setFormData({ ...formData, m2: parseFloat(m2) });
-                  }}
                   className="bg-slate-800/50 border-slate-700 text-white"
+                  required
                 />
               </div>
 
