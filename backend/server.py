@@ -961,6 +961,119 @@ async def get_stock():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ===== Excel Report Generation =====
+@api_router.get("/generate-excel-report")
+async def generate_excel_report(start_date: str, end_date: str):
+    """
+    Excel rapor oluşturur ve direkt indirme sağlar
+    """
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+        
+        # Verileri çek
+        productions = await db.productions.find({}, {"_id": 0}).to_list(10000)
+        consumptions = await db.daily_consumption.find({}, {"_id": 0}).to_list(10000)
+        shipments = await db.shipments.find({}, {"_id": 0}).to_list(10000)
+        
+        # Tarihe göre filtrele
+        def filter_by_date(items):
+            return [item for item in items if start_date <= item.get('date', '') <= end_date]
+        
+        filtered_productions = filter_by_date(productions)
+        filtered_consumptions = filter_by_date(consumptions)
+        filtered_shipments = filter_by_date(shipments)
+        
+        # Excel oluştur
+        wb = Workbook()
+        
+        # Sayfa 1: Hammadde Tüketimi
+        ws1 = wb.active
+        ws1.title = "Hammadde Tuketimi"
+        
+        ws1['A1'] = 'HAMMADDE TUKETIM RAPORU'
+        ws1['A1'].font = Font(bold=True, size=14)
+        ws1['A1'].fill = PatternFill(start_color="3B82F6", end_color="3B82F6", fill_type="solid")
+        
+        ws1['A3'] = 'Hammadde'
+        ws1['B3'] = 'Toplam Tuketim (kg)'
+        
+        material_totals = {'petkim': 0, 'estol': 0, 'talk': 0, 'gaz': 0, 'fire': 0}
+        for c in filtered_consumptions:
+            material_totals['petkim'] += float(c.get('petkim', 0))
+            material_totals['estol'] += float(c.get('estol', 0))
+            material_totals['talk'] += float(c.get('talk', 0))
+            material_totals['gaz'] += float(c.get('gaz', 0))
+            material_totals['fire'] += float(c.get('fire', 0))
+        
+        ws1['A4'] = 'PETKiM LDPE'
+        ws1['B4'] = round(material_totals['petkim'], 2)
+        ws1['A5'] = 'ESTOL'
+        ws1['B5'] = round(material_totals['estol'], 2)
+        ws1['A6'] = 'TALK'
+        ws1['B6'] = round(material_totals['talk'], 2)
+        ws1['A7'] = 'GAZ (N2)'
+        ws1['B7'] = round(material_totals['gaz'], 2)
+        ws1['A8'] = 'FiRE'
+        ws1['B8'] = round(material_totals['fire'], 2)
+        
+        # Sayfa 2: Üretim
+        ws2 = wb.create_sheet("Uretim")
+        ws2['A1'] = 'URETIM RAPORU'
+        ws2['A1'].font = Font(bold=True, size=14)
+        
+        ws2.append(['Tarih', 'Makine', 'Kalinlik', 'En', 'Boy', 'Adet', 'M2', 'Renk'])
+        for p in filtered_productions:
+            ws2.append([
+                p.get('date', ''),
+                p.get('machine', ''),
+                p.get('thickness', ''),
+                p.get('width', ''),
+                p.get('length', ''),
+                p.get('quantity', 0),
+                round(p.get('m2', 0), 2),
+                p.get('color', '')
+            ])
+        
+        # Sayfa 3: Sevkiyat
+        ws3 = wb.create_sheet("Sevkiyat")
+        ws3['A1'] = 'SEVKIYAT RAPORU'
+        ws3['A1'].font = Font(bold=True, size=14)
+        
+        ws3.append(['Tarih', 'Musteri', 'Tip', 'Ebat', 'Adet', 'M2', 'Irsaliye', 'Arac'])
+        for s in filtered_shipments:
+            ws3.append([
+                s.get('date', ''),
+                s.get('customer', ''),
+                s.get('type', ''),
+                s.get('size', ''),
+                s.get('quantity', 0),
+                round(s.get('m2', 0), 2),
+                s.get('waybill', ''),
+                s.get('vehicle', '')
+            ])
+        
+        # Excel'i kaydet
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        
+        from datetime import datetime
+        month_name = datetime.strptime(start_date, '%Y-%m-%d').strftime('%B_%Y')
+        file_name = f"SAR_Ambalaj_{month_name}_Raporu.xlsx"
+        
+        return StreamingResponse(
+            buffer,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={file_name}"
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ===== PDF Report Generation =====
 @api_router.get("/generate-pdf-report")
 async def generate_pdf_report(start_date: str, end_date: str):
