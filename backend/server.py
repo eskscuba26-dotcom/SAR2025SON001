@@ -961,6 +961,183 @@ async def get_stock():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ===== PDF Report Generation =====
+@api_router.get("/generate-pdf-report")
+async def generate_pdf_report(start_date: str, end_date: str):
+    """
+    Backend'de PDF rapor oluşturur ve direkt indirme sağlar
+    """
+    try:
+        # Verileri çek
+        productions = await db.productions.find({}, {"_id": 0}).to_list(10000)
+        materials = await db.materials.find({}, {"_id": 0}).to_list(10000)
+        consumptions = await db.daily_consumption.find({}, {"_id": 0}).to_list(10000)
+        shipments = await db.shipments.find({}, {"_id": 0}).to_list(10000)
+        
+        # Tarihe göre filtrele
+        def filter_by_date(items, date_field='date'):
+            return [item for item in items if start_date <= item.get(date_field, '') <= end_date]
+        
+        filtered_productions = filter_by_date(productions)
+        filtered_consumptions = filter_by_date(consumptions)
+        filtered_shipments = filter_by_date(shipments)
+        
+        # PDF oluştur
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=20*mm, bottomMargin=20*mm)
+        
+        # PDF elemanları
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Özel stiller
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#1e293b'),
+            spaceAfter=30,
+            alignment=TA_CENTER
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=16,
+            textColor=colors.HexColor('#1e293b'),
+            spaceAfter=12,
+            spaceBefore=20
+        )
+        
+        # Kapak sayfası
+        from datetime import datetime
+        month_name = datetime.strptime(start_date, '%Y-%m-%d').strftime('%B %Y').upper()
+        
+        elements.append(Spacer(1, 80))
+        elements.append(Paragraph("SAR AMBALAJ", title_style))
+        elements.append(Paragraph(f"{month_name} AYI", heading_style))
+        elements.append(Paragraph("FABRIKA RAPORU", title_style))
+        elements.append(Spacer(1, 40))
+        elements.append(Paragraph(f"Rapor Tarihi: {datetime.now().strftime('%d.%m.%Y')}", styles['Normal']))
+        elements.append(Paragraph(f"Tarih Araligi: {start_date} - {end_date}", styles['Normal']))
+        elements.append(PageBreak())
+        
+        # Sayfa 1: Hammadde Tüketimi
+        elements.append(Paragraph("1. HAMMADDE TUKETIM RAPORU", heading_style))
+        
+        material_totals = {'petkim': 0, 'estol': 0, 'talk': 0, 'gaz': 0, 'fire': 0}
+        for c in filtered_consumptions:
+            material_totals['petkim'] += float(c.get('petkim', 0))
+            material_totals['estol'] += float(c.get('estol', 0))
+            material_totals['talk'] += float(c.get('talk', 0))
+            material_totals['gaz'] += float(c.get('gaz', 0))
+            material_totals['fire'] += float(c.get('fire', 0))
+        
+        material_data = [
+            ['Hammadde Adi', 'Toplam Tuketim'],
+            ['PETKiM LDPE', f"{material_totals['petkim']:.2f} kg"],
+            ['ESTOL', f"{material_totals['estol']:.2f} kg"],
+            ['TALK', f"{material_totals['talk']:.2f} kg"],
+            ['GAZ (N2)', f"{material_totals['gaz']:.2f} kg"],
+            ['FiRE', f"{material_totals['fire']:.2f} kg"],
+        ]
+        
+        material_table = Table(material_data, colWidths=[100*mm, 60*mm])
+        material_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3b82f6')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(material_table)
+        elements.append(PageBreak())
+        
+        # Sayfa 2: Üretim
+        elements.append(Paragraph("2. URETIM RAPORU", heading_style))
+        
+        total_production = sum(p.get('quantity', 0) for p in filtered_productions)
+        total_m2 = sum(p.get('m2', 0) for p in filtered_productions)
+        
+        elements.append(Paragraph(f"Toplam Uretim: {total_production} adet | Toplam M2: {total_m2:.2f} m2", styles['Normal']))
+        elements.append(Spacer(1, 20))
+        
+        production_data = [['Tarih', 'Makine', 'Ebat', 'Adet', 'M2']]
+        for p in filtered_productions[:30]:  # İlk 30 kayıt
+            production_data.append([
+                p.get('date', ''),
+                p.get('machine', ''),
+                f"{p.get('thickness', '')} x {p.get('width', '')}cm x {p.get('length', '')}m",
+                str(p.get('quantity', 0)),
+                f"{p.get('m2', 0):.2f}"
+            ])
+        
+        production_table = Table(production_data, colWidths=[25*mm, 30*mm, 55*mm, 20*mm, 20*mm])
+        production_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#22c55e')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(production_table)
+        elements.append(PageBreak())
+        
+        # Sayfa 3: Sevkiyat
+        elements.append(Paragraph("3. SEVKIYAT RAPORU", heading_style))
+        
+        total_shipment = sum(int(s.get('quantity', 0)) for s in filtered_shipments)
+        
+        elements.append(Paragraph(f"Toplam Sevkiyat: {total_shipment} adet", styles['Normal']))
+        elements.append(Spacer(1, 20))
+        
+        shipment_data = [['Tarih', 'Musteri', 'Ebat', 'Adet', 'Irsaliye']]
+        for s in filtered_shipments[:30]:
+            shipment_data.append([
+                s.get('date', ''),
+                s.get('customer', ''),
+                s.get('size', ''),
+                str(s.get('quantity', 0)),
+                s.get('waybill', '-')
+            ])
+        
+        shipment_table = Table(shipment_data, colWidths=[25*mm, 45*mm, 50*mm, 20*mm, 30*mm])
+        shipment_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#fb923c')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(shipment_table)
+        
+        # PDF'i oluştur
+        doc.build(elements)
+        buffer.seek(0)
+        
+        # Dosya adı
+        file_name = f"SAR_Ambalaj_{month_name.replace(' ', '_')}_Raporu.pdf"
+        
+        return StreamingResponse(
+            buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={file_name}"
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
