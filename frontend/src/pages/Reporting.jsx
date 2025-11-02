@@ -18,6 +18,8 @@ export const Reporting = () => {
     endDate: new Date().toISOString().split('T')[0]
   });
   const [loading, setLoading] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfFileName, setPdfFileName] = useState('');
   const { toast } = useToast();
 
   const formatDate = (dateStr) => {
