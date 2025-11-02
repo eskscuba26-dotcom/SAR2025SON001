@@ -173,6 +173,7 @@ const AppRoutes = () => {
       <Route path="/manual-cost-calculator" element={<ProtectedRoute><ManualCostCalculator /></ProtectedRoute>} />
       <Route path="/exchange-rates" element={<ProtectedRoute><ExchangeRates /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+      <Route path="/reporting" element={<ProtectedRoute><Reporting /></ProtectedRoute>} />
       <Route path="/excel-viewer" element={<ProtectedRoute><ExcelViewer /></ProtectedRoute>} />
     </Routes>
   );
