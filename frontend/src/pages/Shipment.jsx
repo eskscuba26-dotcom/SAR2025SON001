@@ -187,7 +187,7 @@ export const Shipment = () => {
   };
 
   const exportToExcel = () => {
-    const exportData = filteredShipments.map(item => ({
+    const exportData = shipments.map(item => ({
       'Tarih': item.date,
       'Müşteri': item.customer,
       'Tip': item.type,
@@ -195,7 +195,7 @@ export const Shipment = () => {
       'M²': item.m2,
       'Adet': item.quantity,
       'Renk': item.color,
-      'İrsaliye No': item.waybillNo
+      'İrsaliye No': item.waybill
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
