@@ -593,27 +593,23 @@ export const Reporting = () => {
         );
       }
 
-      // PDF'i indir
+      // PDF'i indir - jsPDF'in kendi metodunu kullan
       const monthNameFile = startDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).replace(' ', '_');
       const fileName = `SAR_Ambalaj_${monthNameFile}_Raporu.pdf`;
       
-      // PDF'i blob olarak oluştur
-      const pdfBlob = doc.output('blob');
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      
-      // İndirme linki oluştur ve tıklat
-      const downloadLink = document.createElement('a');
-      downloadLink.href = pdfUrl;
-      downloadLink.download = fileName;
-      downloadLink.click();
-      
-      // Belleği temizle
-      setTimeout(() => URL.revokeObjectURL(pdfUrl), 100);
+      // Direkt indirme
+      doc.save(fileName);
 
       toast({
-        title: '✅ Basarili!',
-        description: `PDF indirildi: ${fileName}. Tarayicinizin indirmeler bolumunden (Ctrl+J) goruntuleyebilirsiniz.`,
-        duration: 5000,
+        title: '✅ PDF Hazirlandi!',
+        description: (
+          <div className="space-y-2">
+            <p className="font-semibold">{fileName}</p>
+            <p className="text-sm">Tarayicinizin indirmeler klasorune kaydedildi.</p>
+            <p className="text-xs">👉 Ctrl+J tusuna basarak indirmeler sayfasini acin.</p>
+          </div>
+        ),
+        duration: 8000,
       });
 
     } catch (error) {
