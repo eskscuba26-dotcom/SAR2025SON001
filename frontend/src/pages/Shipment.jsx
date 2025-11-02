@@ -384,13 +384,24 @@ export const Shipment = () => {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-              data-testid="submit-shipment-btn"
-            >
-              Sevkiyat Kaydı Ekle
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                data-testid="submit-shipment-btn"
+              >
+                {editingId ? '💾 Güncelle' : '➕ Sevkiyat Kaydı Ekle'}
+              </Button>
+              {editingId && (
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  className="bg-slate-600 hover:bg-slate-700 text-white"
+                >
+                  ❌ İptal
+                </Button>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>
