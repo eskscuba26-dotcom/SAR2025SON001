@@ -217,7 +217,9 @@ export const Shipment = () => {
       {auth.canAdd() && (
       <Card className="bg-slate-900/50 border-slate-800">
         <CardHeader>
-          <CardTitle className="text-white">Sevkiyat Girişi</CardTitle>
+          <CardTitle className="text-white">
+            {editingId ? '✏️ Sevkiyat Kaydını Düzenle' : '➕ Yeni Sevkiyat Girişi'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
