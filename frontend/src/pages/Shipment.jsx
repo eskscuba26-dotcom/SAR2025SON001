@@ -83,32 +83,88 @@ export const Shipment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await shipmentApi.create(formData);
-      toast({
-        title: 'Başarılı',
-        description: 'Sevkiyat kaydı eklendi',
-      });
+      if (editingId) {
+        // Güncelleme
+        await shipmentApi.update(editingId, formData);
+        toast({
+          title: 'Başarılı',
+          description: 'Sevkiyat kaydı güncellendi',
+        });
+        setEditingId(null);
+      } else {
+        // Yeni kayıt
+        await shipmentApi.create(formData);
+        toast({
+          title: 'Başarılı',
+          description: 'Sevkiyat kaydı eklendi',
+        });
+      }
       fetchShipments();
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        customer: '',
-        type: 'Normal',
-        size: '',
-        m2: 0,
-        quantity: '',
-        color: 'Doğal',
-        waybill: '',
-        vehicle: '',
-        driver: '',
-        exitTime: '',
-      });
+      resetForm();
     } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Sevkiyat kaydı eklenirken hata oluştu',
+        description: editingId ? 'Güncelleme başarısız' : 'Sevkiyat kaydı eklenirken hata oluştu',
         variant: 'destructive',
       });
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      date: new Date().toISOString().split('T')[0],
+      customer: '',
+      type: 'Normal',
+      thickness: '',
+      width: '',
+      length: '',
+      size: '',
+      m2: 0,
+      quantity: '',
+      color: 'Doğal',
+      waybill: '',
+      vehicle: '',
+      driver: '',
+      exitTime: '',
+    });
+    setEditingId(null);
+  };
+
+  const handleEdit = (shipment) => {
+    setEditingId(shipment.id);
+    
+    // Size'dan thickness, width, length'i parse et
+    const sizeParts = (shipment.size || '').split(' x ');
+    let thickness = '', width = '', length = '';
+    
+    if (sizeParts.length >= 3) {
+      thickness = sizeParts[0].replace('mm', '').trim();
+      width = sizeParts[1].replace('cm', '').trim();
+      length = sizeParts[2].replace('m', '').trim();
+    } else if (sizeParts.length === 2) {
+      width = sizeParts[0].replace('cm', '').trim();
+      length = sizeParts[1].replace('m', '').trim();
+    }
+    
+    setFormData({
+      date: shipment.date || new Date().toISOString().split('T')[0],
+      customer: shipment.customer || '',
+      type: shipment.type || 'Normal',
+      thickness: thickness,
+      width: width,
+      length: length,
+      size: shipment.size || '',
+      m2: shipment.m2 || 0,
+      quantity: String(shipment.quantity || ''),
+      color: shipment.color || 'Doğal',
+      waybill: shipment.waybill || '',
+      vehicle: shipment.vehicle || '',
+      driver: shipment.driver || '',
+      exitTime: shipment.exitTime || '',
+    });
+    
+    // Formu görünür yap
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id) => {
