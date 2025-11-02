@@ -414,6 +414,16 @@ async def create_shipment(data: dict, _: bool = Depends(check_admin_role)):
     await db.shipments.insert_one(data)
     return {"message": "Created", "id": data['id']}
 
+@api_router.put("/shipments/{id}")
+async def update_shipment(id: str, data: dict, _: bool = Depends(check_admin_role)):
+    result = await db.shipments.update_one(
+        {"id": id},
+        {"$set": data}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Shipment not found")
+    return {"message": "Updated successfully"}
+
 @api_router.delete("/shipments/{id}")
 async def delete_shipment(id: str, _: bool = Depends(check_admin_role)):
     result = await db.shipments.delete_one({"id": id})
