@@ -6,8 +6,6 @@ import { Label } from '@/components/ui/label';
 import { FileText, Download, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
