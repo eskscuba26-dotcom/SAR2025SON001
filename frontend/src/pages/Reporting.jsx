@@ -39,6 +39,57 @@ export const Reporting = () => {
       const token = localStorage.getItem('token');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
+      // Backend'den PDF'i çek
+      const response = await axios.get(
+        `${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`,
+        {
+          headers,
+          responseType: 'blob' // Önemli: binary data
+        }
+      );
+      
+      // Blob'u URL'e çevir
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Dosya adını oluştur
+      const startDate = new Date(dateRange.startDate);
+      const monthName = startDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).replace(' ', '_');
+      const fileName = `SAR_Ambalaj_${monthName}_Raporu.pdf`;
+      
+      // İndirme linkini oluştur ve tıklat
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      // URL'i temizle
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: '✅ PDF Indirildi!',
+        description: `${fileName} basariyla indirildi. Indirmeler klasorunu kontrol edin.`,
+        duration: 5000,
+      });
+
+    } catch (error) {
+      console.error('PDF olusturma hatasi:', error);
+      toast({
+        title: 'Hata',
+        description: error.message || 'Rapor olusturulamadi',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+      
+      // Token'ı al
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
       // Tüm verileri çek
       const [productions, materials, consumptions, shipments, stockStats] = await Promise.all([
         axios.get(`${API}/production`, { headers }),
