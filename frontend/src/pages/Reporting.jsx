@@ -137,7 +137,7 @@ export const Reporting = () => {
 
       const grandTotal = Object.values(materialTotals).reduce((sum, val) => sum + val, 0);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Hammadde Adi', 'Toplam Tuketim', 'Ortalama Gunluk']],
         body: materialData,
