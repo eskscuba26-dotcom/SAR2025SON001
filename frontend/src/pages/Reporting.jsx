@@ -127,17 +127,16 @@ export const Reporting = () => {
           </div>
 
           <div className="mt-6">
-            <Button
-              onClick={generatePDF}
-              disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6"
+            <a
+              href={`${BACKEND_URL}/api/generate-excel-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`}
+              className="block w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6 rounded-md text-center font-bold"
+              style={{ textDecoration: 'none' }}
             >
-              {loading ? (
-                <>⏳ PDF Hazirlaniyor...</>
-              ) : (
-                <>📄 PDF Raporunu Olustur ve Goster</>
-              )}
-            </Button>
+              📊 EXCEL RAPORU INDIR
+            </a>
+            <p className="text-center text-green-400 mt-2 text-sm">
+              ☝️ Tiklayin, Excel dosyasi direkt bilgisayariniza inecek
+            </p>
           </div>
         </CardContent>
       </Card>
