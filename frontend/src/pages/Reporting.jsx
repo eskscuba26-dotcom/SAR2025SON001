@@ -146,13 +146,12 @@ export const Reporting = () => {
           <div className="flex items-start gap-4">
             <FileText className="h-8 w-8 text-blue-400 flex-shrink-0" />
             <div>
-              <h3 className="text-white font-semibold mb-2">📋 Rapor Icerigi</h3>
+              <h3 className="text-white font-semibold mb-2">📋 Excel Rapor Icerigi</h3>
               <ul className="text-slate-300 text-sm space-y-1">
-                <li>✅ Kapak sayfasi (SAR AMBALAJ + Ay + FABRIKA RAPORU)</li>
-                <li>✅ Hammadde tuketim detaylari (PETKiM, ESTOL, TALK, GAZ, FiRE)</li>
-                <li>✅ Makine bazinda uretim analizi ve detayli liste</li>
-                <li>✅ Musteri bazinda sevkiyat ozeti ve irsaliye detaylari</li>
-                <li>✅ PDF backend tarafindan olusturulur (tarayici engeli yok)</li>
+                <li>✅ Sayfa 1: Hammadde tuketim detaylari</li>
+                <li>✅ Sayfa 2: Uretim detaylari (Tarih, makine, olcu, adet, m2)</li>
+                <li>✅ Sayfa 3: Sevkiyat detaylari (Musteri, irsaliye, arac)</li>
+                <li>✅ Excel formatinda - direkt indirme</li>
               </ul>
             </div>
           </div>
