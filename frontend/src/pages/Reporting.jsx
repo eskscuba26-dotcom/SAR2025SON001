@@ -126,26 +126,30 @@ export const Reporting = () => {
             </div>
           </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-6">
             <Button
-              onClick={() => setShowPdf(true)}
+              onClick={generatePDF}
+              disabled={loading}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6"
             >
-              <FileText className="mr-2 h-5 w-5" />
-              PDF Raporunu Goster
+              {loading ? (
+                <>⏳ PDF Hazirlaniyor...</>
+              ) : (
+                <>📄 PDF Raporunu Olustur ve Goster</>
+              )}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* PDF Önizleme */}
-      {showPdf && (
+      {pdfBlob && (
         <Card className="bg-slate-900/50 border-emerald-600">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-white">PDF Rapor Onizleme</CardTitle>
+              <CardTitle className="text-white">✅ PDF RAPOR HAZIR</CardTitle>
               <Button
-                onClick={() => setShowPdf(false)}
+                onClick={() => setPdfBlob(null)}
                 variant="outline"
                 className="border-slate-600 text-slate-300"
               >
@@ -155,23 +159,32 @@ export const Reporting = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="bg-blue-900/30 border-2 border-blue-600 rounded p-4">
-                <p className="text-blue-200 font-bold text-center mb-2">
-                  📥 PDF'i KAYDETMEK ICIN:
+              <div className="bg-gradient-to-r from-green-900/50 to-blue-900/50 border-4 border-green-500 rounded-lg p-6 text-center">
+                <p className="text-green-200 font-bold text-2xl mb-4">
+                  📥 BILGISAYARINIZA KAYDETMEK ICIN:
                 </p>
-                <ol className="text-blue-300 text-sm space-y-2">
-                  <li>1️⃣ Asagidaki PDF uzerine <strong>SAG TIKLAYIN</strong></li>
-                  <li>2️⃣ <strong>"Farkli Kaydet"</strong> veya <strong>"Save As"</strong> secin</li>
-                  <li>3️⃣ Bilgisayarinizda istediginiz yere kaydedin</li>
-                </ol>
+                <div className="text-green-100 text-lg space-y-3 text-left max-w-2xl mx-auto">
+                  <p>1️⃣ Asagidaki PDF <strong className="text-yellow-300">UZERINE SAG TIKLAYIN</strong></p>
+                  <p>2️⃣ <strong className="text-yellow-300">"FARKLI KAYDET"</strong> veya <strong className="text-yellow-300">"SAVE AS"</strong> secenegini tiklayin</p>
+                  <p>3️⃣ Bilgisayarinizda kaydetmek istediginiz yeri secin</p>
+                  <p>4️⃣ <strong className="text-yellow-300">KAYDET</strong> butonuna basin - BITTI! ✅</p>
+                </div>
               </div>
 
-              <iframe
-                src={pdfUrl}
-                className="w-full border-4 border-emerald-600 rounded-lg"
-                style={{ height: '800px' }}
-                title="PDF Rapor"
-              />
+              <div className="border-8 border-emerald-500 rounded-lg overflow-hidden bg-white">
+                <iframe
+                  src={pdfBlob}
+                  className="w-full"
+                  style={{ height: '900px' }}
+                  title="PDF Rapor - Sag Tikla Farkli Kaydet"
+                />
+              </div>
+
+              <div className="bg-yellow-900/50 border-2 border-yellow-500 rounded p-4 text-center">
+                <p className="text-yellow-200 font-semibold">
+                  ⚠️ PDF gorunmuyorsa tarayicinizin sol ustundeki INDIR butonunu kullanin
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
