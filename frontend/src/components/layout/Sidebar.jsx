@@ -13,6 +13,7 @@ import {
   TrendingUp,
   DollarSign,
   Users,
+  FileText,
   LogOut,
   Menu,
   X,
@@ -28,6 +29,7 @@ const menuItems = [
   { path: '/daily-consumption', label: 'Günlük Tüketim', icon: Calendar },
   { path: '/cost-analysis', label: 'Maliyet Analizi', icon: TrendingUp },
   { path: '/manual-cost-calculator', label: 'Manuel Maliyet', icon: DollarSign },
+  { path: '/reporting', label: '📊 Raporlama', icon: FileText, adminOnly: true },
   { path: '/exchange-rates', label: 'Kur Ayarları', icon: DollarSign },
   { path: '/users', label: 'Kullanıcı Yönetimi', icon: Users },
 ];
