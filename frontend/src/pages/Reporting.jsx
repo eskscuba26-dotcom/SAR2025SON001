@@ -145,8 +145,6 @@ export const Reporting = () => {
           </CardContent>
         </Card>
       )}
-        </CardContent>
-      </Card>
 
       <Card className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-blue-700">
         <CardContent className="p-6">
