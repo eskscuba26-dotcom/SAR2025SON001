@@ -316,6 +316,55 @@ async def get_stock_stats():
     }
 
 
+# ===== Stock Stats Route =====
+@api_router.get("/stock-stats")
+async def get_stock_stats():
+    """
+    Stok istatistiklerini ebat ve renk bazında gruplar
+    """
+    # Tüm üretim ve sevkiyatları çek
+    productions = await db.productions.find({}, {"_id": 0}).to_list(10000)
+    shipments = await db.shipments.find({}, {"_id": 0}).to_list(10000)
+    
+    # Ebat ve renk bazında gruplayalım
+    stock_by_size = {}
+    
+    # Üretimleri ekle
+    for prod in productions:
+        size = f"{prod.get('thickness', '')} x {prod.get('width', '')}cm x {prod.get('length', '')}m"
+        color = prod.get('color', 'Doğal')
+        key = f"{size}|{color}"
+        
+        if key not in stock_by_size:
+            stock_by_size[key] = {
+                'size': size,
+                'color': color,
+                'totalQuantity': 0,
+                'totalM2': 0.0
+            }
+        
+        stock_by_size[key]['totalQuantity'] += prod.get('quantity', 0)
+        stock_by_size[key]['totalM2'] += prod.get('m2', 0.0)
+    
+    # Sevkiyatları çıkar
+    for ship in shipments:
+        size = ship.get('size', '')
+        color = ship.get('color', 'Doğal')
+        key = f"{size}|{color}"
+        
+        if key in stock_by_size:
+            stock_by_size[key]['totalQuantity'] -= int(ship.get('quantity', 0))
+            stock_by_size[key]['totalM2'] -= float(ship.get('m2', 0.0))
+    
+    # Liste haline getir ve pozitif stokları filtrele
+    result = [v for v in stock_by_size.values() if v['totalQuantity'] > 0]
+    
+    # Miktara göre sırala
+    result.sort(key=lambda x: x['totalQuantity'], reverse=True)
+    
+    return result
+
+
 # ===== Cut Products Routes =====
 @api_router.get("/cut-products")
 async def get_cut_products():
