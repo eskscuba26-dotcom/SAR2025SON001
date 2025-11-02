@@ -23,43 +23,51 @@ export const Reporting = () => {
       setLoading(true);
       
       const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
-      const response = await axios.get(
-        `${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`,
-        {
-          headers,
-          responseType: 'blob'
+      // DIREKT backend URL'ine git - tarayıcı otomatik indirecek
+      const downloadUrl = `${API}/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
+      
+      // Token varsa header ile fetch et
+      if (token) {
+        const response = await fetch(downloadUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Rapor olusturulamadi');
         }
-      );
-      
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      
-      const startDate = new Date(dateRange.startDate);
-      const monthName = startDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).replace(' ', '_');
-      const fileName = `SAR_Ambalaj_${monthName}_Raporu.pdf`;
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      window.URL.revokeObjectURL(url);
+        
+        // Blob'a çevir
+        const blob = await response.blob();
+        
+        // Geçici URL oluştur ve indir
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `SAR_Ambalaj_Raporu_${dateRange.startDate}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        // Token yoksa direkt window.location
+        window.location.href = downloadUrl;
+      }
 
       toast({
-        title: '✅ PDF Indirildi!',
-        description: `${fileName} basariyla indirildi. Indirmeler klasorunu kontrol edin.`,
+        title: '✅ Basarili!',
+        description: 'PDF indiriliyor. Lutfen Downloads klasorunu kontrol edin.',
         duration: 5000,
       });
 
     } catch (error) {
-      console.error('PDF olusturma hatasi:', error);
+      console.error('Hata:', error);
       toast({
         title: 'Hata',
-        description: error.response?.data?.detail || error.message || 'Rapor olusturulamadi',
+        description: 'PDF olusturulamadi. Lutfen tekrar deneyin.',
         variant: 'destructive',
       });
     } finally {
