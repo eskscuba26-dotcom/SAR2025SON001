@@ -184,7 +184,7 @@ export const Reporting = () => {
         `${parseFloat(c.fire || 0).toFixed(1)} kg`
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Tarih', 'PETKiM', 'ESTOL', 'TALK', 'GAZ', 'FiRE']],
         body: consumptionDetailData,
@@ -253,7 +253,7 @@ export const Reporting = () => {
         productionByMachine[machine].totalM2.toFixed(2)
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Makine Adi', 'Islem Sayisi', 'Toplam Adet', 'Toplam M2']],
         body: machineData,
@@ -288,7 +288,7 @@ export const Reporting = () => {
         p.masuraType || ''
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Tarih', 'Makine', 'Ebat', 'Adet', 'M2', 'Renk', 'Masura']],
         body: productionDetailData,
@@ -358,7 +358,7 @@ export const Reporting = () => {
         shipmentByCustomer[customer].totalM2.toFixed(2)
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Musteri Adi', 'Sevkiyat Sayisi', 'Toplam Adet', 'Toplam M2']],
         body: customerData,
@@ -394,7 +394,7 @@ export const Reporting = () => {
         s.vehicle || '-'
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Tarih', 'Musteri', 'Tip', 'Ebat', 'Adet', 'M2', 'Irsaliye', 'Arac']],
         body: shipmentDetailData,
@@ -445,7 +445,7 @@ export const Reporting = () => {
         ['Kalan Stok', `${remainingStock} adet`, `${(totalM2 - totalShipmentM2).toFixed(2)} m2`]
       ];
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: yPos,
         head: [['Durum', 'Adet', 'M2']],
         body: stockSummaryData,
@@ -480,7 +480,7 @@ export const Reporting = () => {
           stock.totalM2?.toFixed(2) || '0'
         ]);
 
-        doc.autoTable({
+        autoTable(doc, {
           startY: yPos,
           head: [['Ebat', 'Renk', 'Adet', 'M2']],
           body: stockDetailData,
@@ -531,7 +531,7 @@ export const Reporting = () => {
           ['FiRE', `${parseFloat(endMaterials.fire || 0).toFixed(2)} kg`]
         ];
 
-        doc.autoTable({
+        autoTable(doc, {
           startY: yPos,
           head: [['Hammadde Adi', 'Kalan Miktar']],
           body: endMaterialData,
