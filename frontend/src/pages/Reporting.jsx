@@ -96,28 +96,55 @@ export const Reporting = () => {
           </div>
 
           <div className="mt-6 space-y-4">
-            {/* Direkt HTML link - JavaScript YOK */}
-            <a 
-              href={`${BACKEND_URL}/api/generate-pdf-report?start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`}
-              className="block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6 rounded-md text-center font-medium transition-colors"
-              style={{ textDecoration: 'none' }}
+            <Button
+              onClick={() => setShowPdf(true)}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg py-6"
             >
-              <span className="inline-flex items-center gap-2">
-                <Download className="h-5 w-5" />
-                PDF Raporu Indir (Tikla)
-              </span>
-            </a>
-            
-            <div className="bg-blue-900/30 border border-blue-600 rounded p-4 text-center">
-              <p className="text-blue-200 text-sm font-semibold mb-2">
-                ⬆️ YUKARIDAKI YESIL BUTONA TIKLAYIN
-              </p>
-              <p className="text-blue-300 text-xs">
-                PDF yeni sekmede acilacak. Tarayicinizin indir butonunu kullanin<br/>
-                VEYA sag tikla → Farkli Kaydet
-              </p>
-            </div>
+              <FileText className="mr-2 h-5 w-5" />
+              PDF Raporunu Goster
+            </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* PDF Önizleme */}
+      {showPdf && (
+        <Card className="bg-slate-900/50 border-emerald-600">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white">PDF Rapor Onizleme</CardTitle>
+              <Button
+                onClick={() => setShowPdf(false)}
+                variant="outline"
+                className="border-slate-600 text-slate-300"
+              >
+                Kapat
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="bg-blue-900/30 border-2 border-blue-600 rounded p-4">
+                <p className="text-blue-200 font-bold text-center mb-2">
+                  📥 PDF'i KAYDETMEK ICIN:
+                </p>
+                <ol className="text-blue-300 text-sm space-y-2">
+                  <li>1️⃣ Asagidaki PDF uzerine <strong>SAG TIKLAYIN</strong></li>
+                  <li>2️⃣ <strong>"Farkli Kaydet"</strong> veya <strong>"Save As"</strong> secin</li>
+                  <li>3️⃣ Bilgisayarinizda istediginiz yere kaydedin</li>
+                </ol>
+              </div>
+
+              <iframe
+                src={pdfUrl}
+                className="w-full border-4 border-emerald-600 rounded-lg"
+                style={{ height: '800px' }}
+                title="PDF Rapor"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
         </CardContent>
       </Card>
 
