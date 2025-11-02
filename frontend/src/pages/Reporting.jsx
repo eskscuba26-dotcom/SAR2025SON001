@@ -739,6 +739,72 @@ export const Reporting = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* PDF Önizleme ve İndirme Bölümü */}
+      {pdfUrl && (
+        <Card className="bg-slate-900/50 border-emerald-600">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <FileText className="h-5 w-5 text-emerald-400" />
+                PDF Rapor Hazir
+              </CardTitle>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = pdfUrl;
+                    link.download = pdfFileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Indir
+                </Button>
+                <Button
+                  onClick={() => window.open(pdfUrl, '_blank')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Yeni Sekmede Ac
+                </Button>
+                <Button
+                  onClick={() => setPdfUrl(null)}
+                  variant="outline"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                >
+                  Kapat
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-slate-800 rounded-lg p-2">
+              <p className="text-slate-300 text-sm mb-3">
+                📄 <strong>{pdfFileName}</strong>
+              </p>
+              <iframe
+                src={pdfUrl}
+                className="w-full rounded border-2 border-slate-700"
+                style={{ height: '800px' }}
+                title="PDF Onizleme"
+              />
+              <div className="mt-3 p-3 bg-blue-900/30 rounded border border-blue-700">
+                <p className="text-blue-300 text-sm">
+                  💡 <strong>Ipucu:</strong> PDF gorunmuyorsa:
+                </p>
+                <ul className="text-blue-200 text-xs mt-2 space-y-1 ml-4">
+                  <li>• "Yeni Sekmede Ac" butonunu kullanin</li>
+                  <li>• Veya "Indir" butonuna tiklayin</li>
+                  <li>• Tarayicinizin PDF goruntuleme izinlerini kontrol edin</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
