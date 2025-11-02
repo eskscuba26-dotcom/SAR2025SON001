@@ -593,14 +593,23 @@ export const Reporting = () => {
         );
       }
 
-      // PDF'i indir
+      // PDF'i indir VE yeni sekmede aç
       const monthNameFile = startDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).replace(' ', '_');
       const fileName = `SAR_Ambalaj_${monthNameFile}_Raporu.pdf`;
+      
+      // PDF'i blob olarak oluştur
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      // Yeni sekmede aç
+      window.open(pdfUrl, '_blank');
+      
+      // Ayrıca indir
       doc.save(fileName);
 
       toast({
         title: 'Basarili!',
-        description: 'Rapor PDF olarak indirildi',
+        description: 'Rapor yeni sekmede acildi ve indirildi',
       });
 
     } catch (error) {
