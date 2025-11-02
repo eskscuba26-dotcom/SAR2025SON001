@@ -24,12 +24,17 @@ export const Reporting = () => {
     try {
       setLoading(true);
       
+      // Token'ı al
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
       // Tüm verileri çek
-      const [productions, materials, consumptions, shipments] = await Promise.all([
-        axios.get(`${API}/production`),
-        axios.get(`${API}/materials`),
-        axios.get(`${API}/daily-consumption`),
-        axios.get(`${API}/shipments`)
+      const [productions, materials, consumptions, shipments, stockStats] = await Promise.all([
+        axios.get(`${API}/production`, { headers }),
+        axios.get(`${API}/materials`, { headers }),
+        axios.get(`${API}/daily-consumption`, { headers }),
+        axios.get(`${API}/shipments`, { headers }),
+        axios.get(`${API}/stock-stats`, { headers })
       ]);
 
       // Tarihe göre filtrele
