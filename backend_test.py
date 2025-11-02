@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://github-file-opener.preview.emergentagent.com/api"
+BACKEND_URL = "https://dosya-opener-1.preview.emergentagent.com/api"
 
 # Default admin credentials
 ADMIN_CREDENTIALS = {
@@ -299,7 +299,7 @@ class BackendTester:
             response = self.session.options(
                 f"{BACKEND_URL}/auth/login",
                 headers={
-                    'Origin': 'https://github-file-opener.preview.emergentagent.com',
+                    'Origin': 'https://dosya-opener-1.preview.emergentagent.com',
                     'Access-Control-Request-Method': 'POST',
                     'Access-Control-Request-Headers': 'Content-Type'
                 },

@@ -21,7 +21,7 @@ bash load_all_data.sh
 - **Rol:** Admin (Tam Yetki)
 
 ### Uygulama URL:
-https://github-file-opener.preview.emergentagent.com
+https://dosya-opener-1.preview.emergentagent.com
 
 ## 📁 VERİ YAPISI
 

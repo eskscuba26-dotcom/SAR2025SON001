@@ -323,7 +323,7 @@ async def main():
     print("\n" + "=" * 70)
     print("✅ TÜM VERİLER BAŞARIYLA YÜKLENDİ VE DOĞRULANDI!")
     print("=" * 70)
-    print("\n🌐 Uygulama: https://github-file-opener.preview.emergentagent.com")
+    print("\n🌐 Uygulama: https://dosya-opener-1.preview.emergentagent.com")
     print("🔑 Giriş: admin / SAR2025!")
     
     client.close()
